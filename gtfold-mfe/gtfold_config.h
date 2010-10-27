@@ -2,7 +2,7 @@
 /* gtfold_config.h.in.  Generated from configure.in by autoheader.  */
 
 /* Define to 1 if you have the `floor' function. */
-/* #undef HAVE_FLOOR */
+#define HAVE_FLOOR 1
 
 /* Define to 1 if you have the `gettimeofday' function. */
 #define HAVE_GETTIMEOFDAY 1
@@ -17,7 +17,7 @@
 #define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the `pow' function. */
-/* #undef HAVE_POW */
+#define HAVE_POW 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
@@ -53,16 +53,13 @@
 #define PACKAGE_NAME "gtfold"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "gtfold 1.17"
+#define PACKAGE_STRING "gtfold 1.18"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gtfold"
 
-/* Define to the home page for this package. */
-#define PACKAGE_URL ""
-
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "1.17"
+#define PACKAGE_VERSION "1.18"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
@@ -74,7 +71,7 @@
 /* #undef TM_IN_SYS_TIME */
 
 /* Version number of package */
-#define VERSION "1.17"
+#define VERSION "1.18"
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */

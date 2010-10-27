@@ -21,6 +21,7 @@
 /* Modified by Sonny Hernandez May 2007 - Aug 2007. All comments added marked by "SH: "*/
 /* Modified by Sainath Mallidi August 2009 - "*/
 
+#include <errno.h>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -35,6 +36,7 @@
 
 #include "loader.h"
 #include "algorithms.h"
+#include "algorithms-partition.h"
 #include "traceback.h"
 #include "main.h"
 #include "main-c.h"
@@ -437,10 +439,40 @@ int main(int argc, char** argv) {
 	fflush(stdout);
 
 	t1 = get_seconds();
-	energy = calculate(bases, fbp, pbp, numfConstraints, numpConstraints); /* Runs the Dynamic programming algorithm to calculate the optimal energy. Defined in algorithms.c file.*/
+	//energy = calculate(bases, fbp, pbp, numfConstraints, numpConstraints); /* Runs the Dynamic programming algorithm to calculate the optimal energy. Defined in algorithms.c file.*/
+    energy = 0;
 	t1 = get_seconds() - t1;
 
 	fprintf(stdout," Done.\n");
+	fprintf(stdout,"Filling Partition Function structure. . . \n");
+	fflush(stdout);
+
+    double** QB = mallocTwoD(bases+1, bases+1);
+    if(QB == NULL) {
+        fprintf(stderr,"Failed to allocate QB\n");
+        return 1;
+    }
+
+    double** Q = mallocTwoD(bases+1, bases+1);
+    if(Q == NULL) {
+        fprintf(stderr,"Failed to allocate Q\n");
+        return 1;
+    }
+
+    double** QM = mallocTwoD(bases+1, bases+1);
+    if(QM == NULL) {
+        fprintf(stderr,"Failed to allocate QM\n");
+        return 1;
+    }
+
+    fill_partition_fn_arrays(bases, QB, Q, QM);
+
+	fprintf(stdout," Done.\n");
+
+    free(QB);
+    free(Q);
+    free(QM);
+
 
 	fprintf(stdout,"Minimum Free Energy = %12.2f\n\n", energy/100.00);
 	fprintf(stdout,"MFE running time (in seconds): %9.6f\n\n", t1);
