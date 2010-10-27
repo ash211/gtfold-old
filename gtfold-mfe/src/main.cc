@@ -35,6 +35,7 @@
 
 #include "loader.h"
 #include "algorithms.h"
+#include "algorithms-partition.h"
 #include "traceback.h"
 #include "main.h"
 #include "main-c.h"
@@ -441,6 +442,24 @@ int main(int argc, char** argv) {
 	t1 = get_seconds() - t1;
 
 	fprintf(stdout," Done.\n");
+	fprintf(stdout,"Filling Partition Function structure. . . \n");
+	fflush(stdout);
+
+    double** QB = (double**)malloc(sizeof(double)*bases*bases);
+    double** Q = (double**)malloc(sizeof(double)*bases*bases);
+    double** QM = (double**)malloc(sizeof(double)*bases*bases);
+    //double QB[bases][bases];
+    //double Q[bases][bases];
+    //double QM[bases][bases];
+
+    fill_partition_fn_arrays(bases, QB, Q, QM);
+
+	fprintf(stdout," Done.\n");
+
+    free(QB);
+    free(Q);
+    free(QM);
+
 
 	fprintf(stdout,"Minimum Free Energy = %12.2f\n\n", energy/100.00);
 	fprintf(stdout,"MFE running time (in seconds): %9.6f\n\n", t1);
