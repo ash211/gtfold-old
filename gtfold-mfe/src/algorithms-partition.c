@@ -1,5 +1,7 @@
 
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "algorithms.h"
 #include "data.h"
@@ -37,18 +39,28 @@ void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
     // loop iterators
     int i,j,d,e,l;
 
+    fprintf(stdout, "Initializing PF arrays. . .");
     // initialize arrays
-    for(i=0; i<len; ++i)
-        for(j=0; j<len; ++j)
-            QB[i][j] = Q[i][j] = QM[i][j] = 0;
+    for(i=0; i<len; ++i) {
+        for(j=0; j<len; ++j) {
+            QB[i][j] = 0;
+            Q[i][j] = 0;
+            QM[i][j] = 0;
+        }
+    }
+
 
     for(i=1; i<len; ++i)
         Q[i][i-1] = 1;
 
+    fprintf(stdout, " done.\n");
+    fprintf(stdout, "Filling PF arrays. . .");
 
     // fill in values in the array
-    for(l=1; i<=len; ++i) {
+    for(l=1; l<=len; ++l) {
+        fprintf(stdout, "Running with l=%d\n", l);
         for(i=1; i<= len-l+1; ++i) {
+
             int j = i+l-1;
 
             // QB recursion
@@ -61,7 +73,7 @@ void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
                     QB[i][j] += exp(-eL(i,j,d,e)/100.0/RT)*QB[d][e];
 
                     QB[i][j] += QM[i+1][d-1]*QB[d][e] *
-                        exp(-(a + 2*b + c*(j-e-1))/RT);
+                        exp(-(a + b + c*(j-e-1))/RT);
                 }
             }
 
@@ -77,3 +89,33 @@ void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
         }
     }
 }
+
+
+double **mallocTwoD(int r, int c) {
+    double** arr = (double **)malloc(r*sizeof(double));
+    int i;
+    for(i=0; i<r; i++) {
+        arr[i] = (double *)malloc(c*sizeof(double));
+
+        // failed allocating a row, so free all previous rows, free the main
+        // array, and return NULL
+        if(arr[i] == NULL) {
+            int j;
+            for(j=0; j<i; j++)
+                free(arr[j]);
+            free(arr);
+            return NULL;
+        }
+    }
+
+    return arr;
+}
+
+void freeTwoD(double** arr, int r, int c) {
+    int i;
+    for(i=0; i<r; i++)
+        free(arr[i]);
+
+    free(arr);
+}
+

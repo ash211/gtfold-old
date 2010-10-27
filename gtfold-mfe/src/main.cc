@@ -21,6 +21,7 @@
 /* Modified by Sonny Hernandez May 2007 - Aug 2007. All comments added marked by "SH: "*/
 /* Modified by Sainath Mallidi August 2009 - "*/
 
+#include <errno.h>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -438,19 +439,31 @@ int main(int argc, char** argv) {
 	fflush(stdout);
 
 	t1 = get_seconds();
-	energy = calculate(bases, fbp, pbp, numfConstraints, numpConstraints); /* Runs the Dynamic programming algorithm to calculate the optimal energy. Defined in algorithms.c file.*/
+	//energy = calculate(bases, fbp, pbp, numfConstraints, numpConstraints); /* Runs the Dynamic programming algorithm to calculate the optimal energy. Defined in algorithms.c file.*/
+    energy = 0;
 	t1 = get_seconds() - t1;
 
 	fprintf(stdout," Done.\n");
 	fprintf(stdout,"Filling Partition Function structure. . . \n");
 	fflush(stdout);
 
-    double** QB = (double**)malloc(sizeof(double)*bases*bases);
-    double** Q = (double**)malloc(sizeof(double)*bases*bases);
-    double** QM = (double**)malloc(sizeof(double)*bases*bases);
-    //double QB[bases][bases];
-    //double Q[bases][bases];
-    //double QM[bases][bases];
+    double** QB = mallocTwoD(bases+1, bases+1);
+    if(QB == NULL) {
+        fprintf(stderr,"Failed to allocate QB\n");
+        return 1;
+    }
+
+    double** Q = mallocTwoD(bases+1, bases+1);
+    if(Q == NULL) {
+        fprintf(stderr,"Failed to allocate Q\n");
+        return 1;
+    }
+
+    double** QM = mallocTwoD(bases+1, bases+1);
+    if(QM == NULL) {
+        fprintf(stderr,"Failed to allocate QM\n");
+        return 1;
+    }
 
     fill_partition_fn_arrays(bases, QB, Q, QM);
 
