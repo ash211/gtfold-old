@@ -1,0 +1,25 @@
+unsigned char getBase(std::string base) {
+	//cout << base;
+	if (!strcmp(base.c_str(), "A") || !strcmp(base.c_str(), "a")) {
+		//cout << "1";
+		return BASE_A;
+	}
+	if (!strcmp(base.c_str(), "C") || !strcmp(base.c_str(), "c")) {
+		//cout << "2";
+		return BASE_C;
+	}
+	if (!strcmp(base.c_str(), "G") || !strcmp(base.c_str(), "g")) {
+		//cout << "3";
+		return BASE_G;
+	}
+	if (!strcmp(base.c_str(), "U") || !strcmp(base.c_str(), "u") || !strcmp(
+			base.c_str(), "T") || !strcmp(base.c_str(), "t")) {
+		//cout << "4";
+		return BASE_U;
+	}
+	if (!strcmp(base.c_str(), "N") || !strcmp(base.c_str(), "n")) {
+		//cout << "4";
+		return BASE_A;
+	}
+	return 'X';
+}
