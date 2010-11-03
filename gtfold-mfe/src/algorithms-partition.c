@@ -27,8 +27,8 @@
  */
 void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
 
-    // Boltzmann constant (R) * Standard 37C temperature (T)
-    double RT = 8.31447215 * 310.15;
+    // Boltzmann constant (R) * Standard 37C temperature (T in Kelvin)
+    double RT = 0.00198721 * 310.15;
 
     // multiConst[3] is a global variable with 3 values: a, b, c for the
     // experimental constants
