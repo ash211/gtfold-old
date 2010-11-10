@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "algorithms.h"
+#include "algorithms-partition.h"
 #include "data.h"
 
 
@@ -88,6 +89,89 @@ void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
             }
         }
     }
+}
+
+/**
+ * @param n Length of the RNA strand
+ * @param structure Array of what pairs with what.  structure[i] = j means
+ *                  that the nucleotide at index i is paired with that at
+ *                  index j. structure[i] = 0 means the nucleotide is
+ *                  unpaired.
+ */
+void printBasePairProbabilities(int n, int *structure, double **Q, double **QB) {
+
+    int i;
+    for(i=1; i<=n; ++i) {
+        int j = structure[i];
+        if(j)
+            printf("%d-%d pair\tPr: %f\n", i, j, probabilityPaired(i,j,n,Q,QB));
+        else
+            printf("%d unpaired:\tPr: %f\n", i, probabilityUnpaired(i,n,Q,QB));
+    }
+
+}
+
+/**
+ * Implement this expression:
+ *
+ *      n
+ * 1 - sum (Q_{1,i-1} * QB_{i,j} * Q_{j+1,n})
+ *      1
+ * ------------------------------------------
+ *             Q_{1,n}
+ *
+ * @param index The nucleotide to consider
+ * @param n The length of the RNA strand
+ * @param Q The Q matrix
+ * @param QB The QB matrix
+ */
+double probabilityUnpaired(int index, int n, double **Q, double **QB) {
+
+    double p = 0;
+
+    int i;
+    for(i=1; i<=n; ++i)
+        if(i != index)
+            p += probabilityPaired(index, i, n, Q, QB);
+
+    return 1 - p;
+}
+
+/**
+ *
+ * Q_{1,i-1} * QB_{i,j} * Q_{j+1,n}
+ * --------------------------------
+ *            Q_{1,n}
+ *
+ * @param i The first nucleotide to consider
+ * @param j The second nucleotide to consider
+ * @param n The length of the RNA strand
+ * @param Q The Q matrix
+ * @param QB The QB matrix
+ */
+double probabilityPaired(int i, int j, int n, double **Q, double **QB) {
+
+    // ensure that the invariant i<=j holds
+    int newi = MIN(i,j);
+    int newj = MAX(i,j);
+    i = newi;
+    j = newj;
+
+    // the first and the last nucleotides pair
+    if(i == 1 && j == n)
+        return QB[i][j] / Q[1][n];
+
+    // j pairs with the first nucleotide
+    else if(i == 1)
+        return QB[i][j] * Q[j+1][n] / Q[1][n];
+
+    // i pairs with last nucleotide
+    else if(j == n)
+        return Q[1][i-1] * QB[i][j] / Q[1][n];
+
+    // neither pairing isn't with either first or last nucleotide
+    else
+        return Q[1][i-1] * QB[i][j] * Q[j+1][n] / Q[1][n];
 }
 
 

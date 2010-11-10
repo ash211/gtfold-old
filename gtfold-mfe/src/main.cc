@@ -439,8 +439,8 @@ int main(int argc, char** argv) {
 	fflush(stdout);
 
 	t1 = get_seconds();
-	//energy = calculate(bases, fbp, pbp, numfConstraints, numpConstraints); /* Runs the Dynamic programming algorithm to calculate the optimal energy. Defined in algorithms.c file.*/
-    energy = 0;
+	energy = calculate(bases, fbp, pbp, numfConstraints, numpConstraints); /* Runs the Dynamic programming algorithm to calculate the optimal energy. Defined in algorithms.c file.*/
+    //energy = 0;
 	t1 = get_seconds() - t1;
 
 	fprintf(stdout," Done.\n");
@@ -469,10 +469,7 @@ int main(int argc, char** argv) {
 
 	fprintf(stdout," Done.\n");
 
-    free(QB);
-    free(Q);
-    free(QM);
-
+    fprintf(stdout,"Q[1][n]: %f\n\n", Q[1][bases]);
 
 	fprintf(stdout,"Minimum Free Energy = %12.2f\n\n", energy/100.00);
 	fprintf(stdout,"MFE running time (in seconds): %9.6f\n\n", t1);
@@ -524,7 +521,14 @@ int main(int argc, char** argv) {
 	printConstraints(bases);
 	printStructure(bases);
 
+	printBasePairProbabilities(bases, structure, Q, QB);
+
 	free_variables();
+
+    // TODO: call the function to free these 2D matrices
+    free(QB);
+    free(Q);
+    free(QM);
 
 	return 0;
 
