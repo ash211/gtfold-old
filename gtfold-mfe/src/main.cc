@@ -46,6 +46,7 @@ using namespace std;
 /* GLOBAL VARIABLES */
 enum BOOL ILSA; /* A boolean variable to know if we are executing with Internal loop speedup algorithm (ILA) or not. ILSA finds the optimal internal loop by exploring all possibilities. */
 enum BOOL NOISOLATE;
+enum BOOL BPP; // calculating base pair probabilities
 enum BOOL USERDATA;
 enum BOOL PARAMS;
 enum BOOL LIMIT_DISTANCE;
@@ -278,6 +279,7 @@ int main(int argc, char** argv) {
 	double t1;
 	ILSA = FALSE;
 	NOISOLATE = FALSE;
+	BPP = FALSE;
 
 	fprintf(stdout,
 			"GTfold: A Scalable Multicore Code for RNA Secondary Structure Prediction\n");
@@ -323,7 +325,10 @@ int main(int argc, char** argv) {
 					lcdIndex = ++i;
 				else
 					help();	
-			} 
+			}  else if (strcmp(argv[i], "-basepairprobabilities") == 0)
+			{
+				BPP = TRUE;
+			}
 			/*else if (strcmp(argv[i], "-forceNC") == 0)
 			{
 				if (i < argc)
@@ -348,6 +353,8 @@ int main(int argc, char** argv) {
 		fprintf(stdout, "Allowing isolated base pairs\n");
 	if (consIndex != 0)
 		fprintf(stdout, "Constraint file index: %d\n", consIndex);
+	if (BPP == TRUE)
+		fprintf(stdout, "Calculating base pair probabilities\n");
 
 	fprintf(stdout, "Opening file: %s\n", argv[fileIndex]);
 	cf.open(argv[fileIndex], ios::in);
@@ -444,32 +451,37 @@ int main(int argc, char** argv) {
 	t1 = get_seconds() - t1;
 
 	fprintf(stdout," Done.\n");
-	fprintf(stdout,"Filling Partition Function structure. . . \n");
-	fflush(stdout);
 
-    double** QB = mallocTwoD(bases+1, bases+1);
-    if(QB == NULL) {
-        fprintf(stderr,"Failed to allocate QB\n");
-        return 1;
+    // only fill the partition function structures if they are needed for BPP
+    double **QB, **Q, **QM;
+    if(BPP) {
+        fprintf(stdout,"Filling Partition Function structure. . . \n");
+        fflush(stdout);
+
+        QB = mallocTwoD(bases+1, bases+1);
+        if(QB == NULL) {
+            fprintf(stderr,"Failed to allocate QB\n");
+            return 1;
+        }
+
+        Q = mallocTwoD(bases+1, bases+1);
+        if(Q == NULL) {
+            fprintf(stderr,"Failed to allocate Q\n");
+            return 1;
+        }
+
+        QM = mallocTwoD(bases+1, bases+1);
+        if(QM == NULL) {
+            fprintf(stderr,"Failed to allocate QM\n");
+            return 1;
+        }
+
+        fill_partition_fn_arrays(bases, QB, Q, QM);
+
+        fprintf(stdout," Done.\n");
+
+        fprintf(stdout,"Q[1][n]: %f\n\n", Q[1][bases]);
     }
-
-    double** Q = mallocTwoD(bases+1, bases+1);
-    if(Q == NULL) {
-        fprintf(stderr,"Failed to allocate Q\n");
-        return 1;
-    }
-
-    double** QM = mallocTwoD(bases+1, bases+1);
-    if(QM == NULL) {
-        fprintf(stderr,"Failed to allocate QM\n");
-        return 1;
-    }
-
-    fill_partition_fn_arrays(bases, QB, Q, QM);
-
-	fprintf(stdout," Done.\n");
-
-    fprintf(stdout,"Q[1][n]: %f\n\n", Q[1][bases]);
 
 	fprintf(stdout,"Minimum Free Energy = %12.2f\n\n", energy/100.00);
 	fprintf(stdout,"MFE running time (in seconds): %9.6f\n\n", t1);
@@ -521,14 +533,17 @@ int main(int argc, char** argv) {
 	printConstraints(bases);
 	printStructure(bases);
 
-	printBasePairProbabilities(bases, structure, Q, QB);
+    if(BPP)
+        printBasePairProbabilities(bases, structure, Q, QB);
 
 	free_variables();
 
-    // TODO: call the function to free these 2D matrices
-    free(QB);
-    free(Q);
-    free(QM);
+    if(BPP) {
+        // TODO: call the function to free these 2D matrices
+        free(QB);
+        free(Q);
+        free(QM);
+    }
 
 	return 0;
 
