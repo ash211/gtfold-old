@@ -62,6 +62,13 @@ int **VM; /* VM(i, j) will contain the energy of optimla multiloop closed with (
 int **WM; /* This array is introduced to help multiloop calculations. WM(i,j) contains the optimal energy of string segment from si to sj if this forms part of a multiloop */
 int *indx; /* This array is used to index V array. Here V array is mapped from 2D to 1D and indx array is used to get the mapping back.*/
 int *constraints;
+
+double **QB;  // QB[i][j] is the sum over all possible loops closed by (i,j),
+              // including the summed contributions of their subloops
+double **Q;   // Q[i][j] in addition to the above quantity QB[i][j], Q[i][j]
+              // also includes all configurations with (i,j) not paired
+double **QM;  // QM[i][j] is the sum of configuration energies from i to j,
+              // assuming that i,j are contained in a multiloop
 #else
 /* This are previously used variables, now they are not used. */
 unsigned char RNA[LENGTH];
@@ -262,6 +269,33 @@ void free_variables() {
 
 }
 
+void init_partition_function_variables(int bases) {
+    QB = mallocTwoD(bases+1, bases+1);
+    if(QB == NULL) {
+        fprintf(stderr,"Failed to allocate QB\n");
+        exit(-1);
+    }
+
+    Q = mallocTwoD(bases+1, bases+1);
+    if(Q == NULL) {
+        fprintf(stderr,"Failed to allocate Q\n");
+        exit(-1);
+    }
+
+    QM = mallocTwoD(bases+1, bases+1);
+    if(QM == NULL) {
+        fprintf(stderr,"Failed to allocate QM\n");
+        exit(-1);
+    }
+}
+
+void free_partition_function_variables(int bases) {
+    freeTwoD(QB, bases+1, bases+1);
+    freeTwoD(Q, bases+1, bases+1);
+    freeTwoD(QM, bases+1, bases+1);
+}
+
+
 /* main function - This calls
  *  1) Read command line arguments.
  *  2) populate() from loader.cc to read the thermodynamic parameters defined in the files given in data directory.
@@ -453,29 +487,14 @@ int main(int argc, char** argv) {
 	fprintf(stdout," Done.\n");
 
     // only fill the partition function structures if they are needed for BPP
-    double **QB, **Q, **QM;
     if(BPP) {
         fprintf(stdout,"Filling Partition Function structure. . . \n");
         fflush(stdout);
 
-        QB = mallocTwoD(bases+1, bases+1);
-        if(QB == NULL) {
-            fprintf(stderr,"Failed to allocate QB\n");
-            return 1;
-        }
+        // malloc the arrays
+        init_partition_function_variables(bases);
 
-        Q = mallocTwoD(bases+1, bases+1);
-        if(Q == NULL) {
-            fprintf(stderr,"Failed to allocate Q\n");
-            return 1;
-        }
-
-        QM = mallocTwoD(bases+1, bases+1);
-        if(QM == NULL) {
-            fprintf(stderr,"Failed to allocate QM\n");
-            return 1;
-        }
-
+        // fill the arrays
         fill_partition_fn_arrays(bases, QB, Q, QM);
 
         fprintf(stdout," Done.\n");
@@ -533,17 +552,14 @@ int main(int argc, char** argv) {
 	printConstraints(bases);
 	printStructure(bases);
 
-    if(BPP)
+    if(BPP) {
         printBasePairProbabilities(bases, structure, Q, QB);
 
-	free_variables();
-
-    if(BPP) {
         // TODO: call the function to free these 2D matrices
-        free(QB);
-        free(Q);
-        free(QM);
+        free_partition_function_variables(bases);
     }
+
+	free_variables();
 
 	return 0;
 

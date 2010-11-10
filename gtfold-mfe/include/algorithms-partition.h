@@ -16,6 +16,15 @@ double probabilityPaired(int i, int j, int n, double **Q, double **QB);
 double **mallocTwoD(int r, int c);
 void freeTwoD(double** arr, int r, int c);
 
+typedef struct _pFuncData {
+    int len;
+    double** QB;
+    double** Q;
+    double** QM;
+
+    // TODO: probability function stuff here
+} pFuncData;
+
 
 #ifdef __cplusplus
 }
