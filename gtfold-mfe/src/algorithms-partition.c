@@ -74,7 +74,7 @@ void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
                     QB[i][j] += exp(-eL(i,j,d,e)/100.0/RT)*QB[d][e];
 
                     QB[i][j] += QM[i+1][d-1]*QB[d][e] *
-                        exp(-(a + b + c*(j-e-1))/RT);
+                        exp(-(a + b + c*(j-e-1))/100.0/RT);
                 }
             }
 
@@ -83,8 +83,8 @@ void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
             for(d=i; d<=j-4; ++d) {
                 for(e=d+4; e<=j; ++e) {
                     Q[i][j] += Q[i][d-1]*QB[d][e];
-                    QM[i][j] += exp(-(b+c*(d-i)+c*(j-e))) * QB[d][e];
-                    QM[i][j] += QM[i][d-1] * QB[d][e] * exp(-(b+c*(j-e))/RT);
+                    QM[i][j] += exp(-(b+c*(d-i)+c*(j-e))/100.0) * QB[d][e];
+                    QM[i][j] += QM[i][d-1] * QB[d][e] * exp(-(b+c*(j-e))/100.0/RT);
                 }
             }
         }
@@ -99,6 +99,7 @@ void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
  *                  unpaired.
  */
 void fillBasePairProbabilities(int length, int *structure, double **Q, double **QB, double **QM, double**P) {
+
 	int d, l, h, i, j;
 	double tempBuffer;
     	// multiConst[3] is a global variable with 3 values: a, b, c for the
@@ -106,37 +107,63 @@ void fillBasePairProbabilities(int length, int *structure, double **Q, double **
  	int a = multConst[0]; // a is an offset penalty for multiloops
 	int b = multConst[2]; // b is penalty for multiloop branches, one per branchesch
 	int c = multConst[1]; // Penalty for single stranded nucleotides in thee multiloops
+
 	for(d = length; d>3; d--){
 		for(h = 1; h + d <= length; h++){
-			for(l = h + d; l<=length; l++){
-				P[h][l] = (QB[h][l] / Q[1][length]);  //Prob. h,l is an exterior base pair
-				if(h > 1)
-					P[h][l] *= Q[1][h-1];
-				if(l < length)
-					P[h][l] *= Q[l+1][length];
-				for(i = 1; i < h; i++)
-					for(j = l+1; l <= length; l++){ //Now For internal loops
-						tempBuffer = P[i][j]*QB[h][l]/QB[i][j];
-						if(i == h-1 && j == l+1) //of which stacked pairs are a special case
-							tempBuffer *= exp(-eS(i,j)/RT);
-						else
-							tempBuffer *= exp(-eL(i,j,h,l)/RT);
 
-						P[i][j] += tempBuffer;
+            l = h+d;
 
-						tempBuffer = 0; // Start over for multiloops
-						if(j - l > 3)
-							tempBuffer += exp(-((h-i-1)*c/RT * QM[l+1][j-1]));
-						if(h - i > 3)
-							tempBuffer += exp(-((j-l-1)*c/RT) * QM[i+1][h-1]);
-						if(j - l > 3 && h -i > 3)
-							tempBuffer += QM[i+1][h-1] * QM[l+1][j-1];
+            tempBuffer = (QB[h][l] / Q[1][length]);  //Prob. h,l is an exterior base pair
+            // first term
+            if(h > 1)
+                tempBuffer *= Q[1][h-1];
+            if(l < length)
+                tempBuffer *= Q[l+1][length];
+            P[h][l] = tempBuffer;
 
-						tempBuffer *= P[i][j] * QB[h][l] / QB[i][j] * exp(-(a+b)/RT);
+            for(i = 1; i < h; i++) {
+                for(j = l+1; j <= length; j++){ //Now For internal loops
 
-						P[i][j] += tempBuffer;
-					}
-			}
+                    //printf("  i: %d h: %d l: %d j: %d\n", i, h, l, j);
+
+
+                    // no contribution to P[h][l] if QB[i][j] is non-positive
+                    if(QB[i][j] <= 1e-7)
+                        continue;
+
+                    // second term
+                    tempBuffer = P[i][j]*QB[h][l]/QB[i][j];
+
+                    //printf(" tempBuffer1: %f\n", tempBuffer);
+
+                    if(i == h-1 && j == l+1) //of which stacked pairs are a special case
+                        tempBuffer *= exp(-eS(i,j)/100.0/RT);
+                    else
+                        tempBuffer *= exp(-eL(i,j,h,l)/100.0/RT);
+
+                    //printf(" tempBuffer2: %f\n", tempBuffer);
+                    P[h][l] += tempBuffer;
+
+                    //printf(" P[%d][%d]: %f\n", h, l, P[h][l]);
+
+                    // third term
+                    tempBuffer = 0; // Start over for multiloops
+                    if(j - l > 3)
+                        tempBuffer += exp(-((h-i-1)*c/100.0/RT)) * QM[l+1][j-1];
+                    if(h - i > 3)
+                        tempBuffer += exp(-((j-l-1)*c/100.0/RT)) * QM[i+1][h-1];
+                    if(j - l > 3 && h - i > 3)
+                        tempBuffer += QM[i+1][h-1] * QM[l+1][j-1];
+
+                    tempBuffer *= P[i][j] * QB[h][l] / QB[i][j] * exp(-(a+b)/100.0/RT);
+
+                    P[h][l] += tempBuffer;
+
+                    //printf("  P[%d][%d]: %f\n", h, l, P[h][l]);
+                }
+            }
+
+            printf("P[%d][%d]: %f\n", h, l, P[h][l]);
 		}
 	}
 }
