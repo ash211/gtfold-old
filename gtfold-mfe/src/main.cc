@@ -69,6 +69,7 @@ double **Q;   // Q[i][j] in addition to the above quantity QB[i][j], Q[i][j]
               // also includes all configurations with (i,j) not paired
 double **QM;  // QM[i][j] is the sum of configuration energies from i to j,
               // assuming that i,j are contained in a multiloop
+double **P;   // P[i][j] The probability that nucleotides i and j form a basepair
 #else
 /* This are previously used variables, now they are not used. */
 unsigned char RNA[LENGTH];
@@ -287,12 +288,19 @@ void init_partition_function_variables(int bases) {
         fprintf(stderr,"Failed to allocate QM\n");
         exit(-1);
     }
+
+    P = mallocTwoD(bases+1, bases+1);
+    if(P == NULL) {
+        fprintf(stderr,"Failed to allocate P\n");
+        exit(-1);
+    }
 }
 
 void free_partition_function_variables(int bases) {
     freeTwoD(QB, bases+1, bases+1);
     freeTwoD(Q, bases+1, bases+1);
     freeTwoD(QM, bases+1, bases+1);
+    freeTwoD(P, bases+1, bases+1);
 }
 
 
@@ -553,9 +561,10 @@ int main(int argc, char** argv) {
 	printStructure(bases);
 
     if(BPP) {
-        printBasePairProbabilities(bases, structure, Q, QB);
+        fillBasePairProbabilities(bases, structure, Q, QB, QM, P);
 
-        // TODO: call the function to free these 2D matrices
+        printBasePairProbabilities(bases, structure, P);
+
         free_partition_function_variables(bases);
     }
 

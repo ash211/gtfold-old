@@ -8,10 +8,10 @@ extern "C" {
 
 
 void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM);
-void printBasePairProbabilities(int n, int *structure, double **Q, double **QB);
+void fillBasePairProbabilities(int length, int *structure, double **Q, double **QB, double **QM, double**P);
+void printBasePairProbabilities(int n, int *structure, double **P);
 
-double probabilityUnpaired(int index, int n, double **Q, double **QB);
-double probabilityPaired(int i, int j, int n, double **Q, double **QB);
+double probabilityUnpaired(int length, int i, double **P);
 
 double **mallocTwoD(int r, int c);
 void freeTwoD(double** arr, int r, int c);
