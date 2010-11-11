@@ -98,16 +98,48 @@ void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
  *                  index j. structure[i] = 0 means the nucleotide is
  *                  unpaired.
  */
-void printBasePairProbabilities(int n, int *structure, double **Q, double **QB) {
+void fillBasePairProbabilities(int length, int *structure, double **Q, double **QB, double **QM, double**P) {
+	int d, l, h, i, j;
+	double tempBuffer;
+    	// multiConst[3] is a global variable with 3 values: a, b, c for the
+	// experimental constants
+ 	int a = multConst[0]; // a is an offset penalty for multiloops
+	int b = multConst[2]; // b is penalty for multiloop branches, one per branchesch
+	int c = multConst[1]; // Penalty for single stranded nucleotides in thee multiloops
+	for(d = length; d>3; d--){
+		for(h = 1; h + d <= length; h++){
+			for(l = h + d; l<=length; l++){
+				P[h][l] = (QB[h][l] / Q[1][length]);  //Prob. h,l is an exterior base pair
+				if(h > 1)
+					P[h][l] *= Q[1][h-1];
+				if(l < length)
+					P[h][l] *= Q[l+1][length];
+				for(i = 1; i < h; i++)
+					for(j = l+1; l <= length; l++){ //Now For internal loops
+						tempBuffer = P[i][j]*QB[h][l]/QB[i][j];
+						if(i == h-1 && j == l+1) //of which stacked pairs are a special case
+							tempBuffer *= exp(-eS(i,j,h,l)/RT);
+						else
+							tempBuffer *= exp(-eH(i,j,h,l)/RT);
 
-    int i;
-    for(i=1; i<=n; ++i) {
-        int j = structure[i];
-        if(j)
-            printf("%d-%d pair\tPr: %f\n", i, j, probabilityPaired(i,j,n,Q,QB));
-        else
-            printf("%d unpaired:\tPr: %f\n", i, probabilityUnpaired(i,n,Q,QB));
-    }
+						P[i][j] += tempBuffer;
+
+						tempBuffer = 0; // Start over for multiloops
+						if(j - l > 3)
+							tempBuffer += exp(-((h-i-1)*c/RT * QM[l+1][j-1]));
+						if(h - i > 3)
+							tempBuffer += exp(-((j-l-1)*c/RT) * QM[i+1][h-1]);
+						if(j - l > 3 && h -i > 3)
+							tempBuffer += QM[i+1][h-1] * QM[l+1][j-1];
+
+						tempBuffer *= P[i][j] * QB[h][l] / QB[i][j] * exp(-(a+b)/RT);
+
+						P[i][j] += tempBuffer;
+					}
+			}
+		}
+	}
+
 
 }
 
