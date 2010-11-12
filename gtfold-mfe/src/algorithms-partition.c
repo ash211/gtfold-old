@@ -71,7 +71,11 @@ void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
 
             for(d=i+1; d<=j-4; ++d) {
                 for(e=d+4; e<=j-1; ++e) {
-                    QB[i][j] += exp(-eL(i,j,d,e)/100.0/RT)*QB[d][e];
+                    
+		    if(d == i + 1 && e == j -1)
+		    	QB[i][j] += exp(-eS(i,j)/100.0/RT)*QB[d][e];
+		    else 
+		    	QB[i][j] += exp(-eL(i,j,d,e)/100.0/RT)*QB[d][e];
 
                     QB[i][j] += QM[i+1][d-1]*QB[d][e] *
                         exp(-(a + b + c*(j-e-1))/100.0/RT);

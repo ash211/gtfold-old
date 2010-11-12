@@ -2,7 +2,7 @@
 /* gtfold_config.h.in.  Generated from configure.in by autoheader.  */
 
 /* Define to 1 if you have the `floor' function. */
-#define HAVE_FLOOR 1
+/* #undef HAVE_FLOOR */
 
 /* Define to 1 if you have the `gettimeofday' function. */
 #define HAVE_GETTIMEOFDAY 1
@@ -17,7 +17,7 @@
 #define HAVE_MEMORY_H 1
 
 /* Define to 1 if you have the `pow' function. */
-#define HAVE_POW 1
+/* #undef HAVE_POW */
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #define HAVE_STDINT_H 1
