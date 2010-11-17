@@ -65,20 +65,24 @@ void fill_partition_fn_arrays(int len, double** QB, double** Q, double** QM) {
             int j = i+l-1;
 
             // QB recursion
-            // NOTE: eH returns an integer encoded as fixed point.  So a
-            // return value of 115 represents raw value 115/100 = 1.15
-            QB[i][j] = exp(-eH(i,j)/100.0/RT);
+            // Only calculate if i and j actually pair
+            if(checkPair(i,j)) {
 
-            for(d=i+1; d<=j-4; ++d) {
-                for(e=d+4; e<=j-1; ++e) {
-                    
-		    if(d == i + 1 && e == j -1)
-		    	QB[i][j] += exp(-eS(i,j)/100.0/RT)*QB[d][e];
-		    else 
-		    	QB[i][j] += exp(-eL(i,j,d,e)/100.0/RT)*QB[d][e];
+                // NOTE: eH returns an integer encoded as fixed point.  So a
+                // return value of 115 represents raw value 115/100 = 1.15
+                QB[i][j] = exp(-eH(i,j)/100.0/RT);
 
-                    QB[i][j] += QM[i+1][d-1]*QB[d][e] *
-                        exp(-(a + b + c*(j-e-1))/100.0/RT);
+                for(d=i+1; d<=j-4; ++d) {
+                    for(e=d+4; e<=j-1; ++e) {
+                        
+                if(d == i + 1 && e == j -1)
+                    QB[i][j] += exp(-eS(i,j)/100.0/RT)*QB[d][e];
+                else 
+                    QB[i][j] += exp(-eL(i,j,d,e)/100.0/RT)*QB[d][e];
+
+                        QB[i][j] += QM[i+1][d-1]*QB[d][e] *
+                            exp(-(a + b + c*(j-e-1))/100.0/RT);
+                    }
                 }
             }
 
