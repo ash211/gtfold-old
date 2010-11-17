@@ -187,7 +187,7 @@ void printBasePairProbabilities(int n, int *structure, double **P) {
     for(i=1; i<=n; ++i) {
         int j = structure[i];
         if(j)
-            printf("%d-%d pair\tPr: %f\n", i, j, P[i][j]);
+            printf("%d-%d pair\tPr: %f\n", i, j, P[MIN(i,j)][MAX(i,j)]);
         else
             printf("%d unpaired\tPr: %f\n", i, probabilityUnpaired(n, i, P));
     }
