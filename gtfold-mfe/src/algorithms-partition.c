@@ -128,9 +128,6 @@ void fillBasePairProbabilities(int length, int *structure, double **Q, double **
             for(i = 1; i < h; i++) {
                 for(j = l+1; j <= length; j++){ //Now For internal loops
 
-                    //printf("  i: %d h: %d l: %d j: %d\n", i, h, l, j);
-
-
                     // no contribution to P[h][l] if QB[i][j] is non-positive
                     if(QB[i][j] <= 1e-7)
                         continue;
@@ -138,17 +135,12 @@ void fillBasePairProbabilities(int length, int *structure, double **Q, double **
                     // second term
                     tempBuffer = P[i][j]*QB[h][l]/QB[i][j];
 
-                    //printf(" tempBuffer1: %f\n", tempBuffer);
-
                     if(i == h-1 && j == l+1) //of which stacked pairs are a special case
                         tempBuffer *= exp(-eS(i,j)/100.0/RT);
                     else
                         tempBuffer *= exp(-eL(i,j,h,l)/100.0/RT);
 
-                    //printf(" tempBuffer2: %f\n", tempBuffer);
                     P[h][l] += tempBuffer;
-
-                    //printf(" P[%d][%d]: %f\n", h, l, P[h][l]);
 
                     // third term
                     tempBuffer = 0; // Start over for multiloops
@@ -162,8 +154,6 @@ void fillBasePairProbabilities(int length, int *structure, double **Q, double **
                     tempBuffer *= P[i][j] * QB[h][l] / QB[i][j] * exp(-(a+b)/100.0/RT);
 
                     P[h][l] += tempBuffer;
-
-                    //printf("  P[%d][%d]: %f\n", h, l, P[h][l]);
                 }
             }
 
